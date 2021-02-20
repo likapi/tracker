@@ -1,0 +1,12 @@
+#!/bin/bash
+
+cli="/usr/share/likapi/"
+
+if [ -e config/valid-dep.txt ]
+then
+	python3 cli/main.py
+else
+	pip3 install -r config/requirements.txt
+	touch ./config/valid-dep.txt
+	python3 cli/main.py
+fi
