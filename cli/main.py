@@ -8,6 +8,8 @@ import colorama
 from colorama import Fore, Back, Style
 import urllib.request, json
 import datetime
+import webbrowser
+from requests_html import HTMLSession
 
 #config
 colorama.init() #colorama init
@@ -63,7 +65,13 @@ def main():
 		elif menu == "4":
 			clear()
 			history()
-		elif menu == "2" or menu == "3" or menu == "5" or menu == "6" or menu == "7" or menu == "8":
+		elif menu == "7":
+			clear()
+			docs()
+		elif menu == "9":
+			clear()
+			help()
+		elif menu == "2" or menu == "3" or menu == "5" or menu == "6" or menu == "8":
 			coming()
 		else:
 			print(Fore.GREEN + """
@@ -87,26 +95,45 @@ def ping():
 	hostname = input(Fore.WHITE + """
 	  Entrez l'url de l'API : """)
 	if hostname != "":
-		try:
-			response = urllib.request.urlopen(hostname)
-			data = json.loads(response.read())
-			print("\n	 Status: " + Fore.GREEN + "OK")
-			print(Fore.YELLOW + "	 Url:", hostname)
-			print(Fore.YELLOW + "	 JSON:",data,"\n\n")
-		except ValueError:
-			print(Fore.GREEN + """
+		if "likapi" in hostname:
+			try:
+				session = HTMLSession()
+				r = session.get(hostname)
+				r.html.render(sleep=1, keep_page=True, scrolldown=1)
+				data = r.html.find("#api")
+				for item in data:
+					data = item.text
+				print("\n	 Status: " + Fore.GREEN + "OK")
+				print(Fore.YELLOW + "	 Url:", hostname)
+				print(Fore.YELLOW + "	 JSON:",data,"\n\n")
+			except ValueError:
+				print(Fore.GREEN + """
 	  API indisponible...
-	 		""")
-			sleep(2)
-			clear()
-			ping()
+	 			""")
+				sleep(2)
+				clear()
+				ping()
 		else:
-			prelog = str(str(now.year)+"/"+str(now.month)+"/"+str(now.day)+"|"+str(now.hour)+"-"+str(now.minute)+"-"+str(now.second))
-			log = prelog.replace(" ","")
-			history = open("history.txt", "a+")
-			history.write(log + "(" + hostname + ")" + "\n")
-			history.close()
-			exit()
+			try:
+				response = urllib.request.urlopen(hostname)
+				data = json.loads(response.read())
+				print("\n	 Status: " + Fore.GREEN + "OK")
+				print(Fore.YELLOW + "	 Url:", hostname)
+				print(Fore.YELLOW + "	 JSON:",data,"\n\n")
+			except ValueError:
+				print(Fore.GREEN + """
+	  API indisponible...
+	 			""")
+				sleep(2)
+				clear()
+				ping()
+			else:
+				prelog = str(str(now.year)+"/"+str(now.month)+"/"+str(now.day)+"|"+str(now.hour)+"-"+str(now.minute)+"-"+str(now.second))
+				log = prelog.replace(" ","")
+				history = open("/usr/share/likapi/config/history.txt", "a+")
+				history.write(log + "(" + hostname + ")" + "\n")
+				history.close()
+				exit()
 	else:
 		print(Fore.GREEN + """
 	  Aucune url entrée...
@@ -126,12 +153,12 @@ def history():
 	  Entrez un numéro : """)
 	if history != "":
 		if history == "1":
-			history_read = open("history.txt", "r+")
+			history_read = open("/usr/share/likapi/config/history.txt", "r+")
 			print(Fore.YELLOW + "\n     ",history_read.readlines(),"\n")
 			history_read.close()
 			exit()
 		elif history == "2":
-			history_del = open("history.txt", "w+")
+			history_del = open("/usr/share/likapi/config/history.txt", "w+")
 			history_del.write("")
 			print(Fore.GREEN + """
 	  Suppression de l'historique effectuée...
@@ -152,6 +179,24 @@ def history():
 		sleep(2)
 		clear()
 		history()
+
+def docs():
+	print(Fore.GREEN + """
+	  Redirection vers la documentation...
+	""")
+	sleep(2)
+	webbrowser.open('https://likapi.github.io/docs/')
+	sleep(2)
+	exit()
+
+def help():
+	print(Fore.GREEN + """
+	  Redirection vers le centre d'aide...
+	""")
+	sleep(2)
+	webbrowser.open('https://likapi.github.io/help/')
+	sleep(2)
+	exit()
 
 def coming():
 	print(Fore.GREEN + """
